@@ -132,3 +132,13 @@ func UpdateProduct(db *sqlx.DB, id int, product NewProduct) (Product, error) {
 
 	return updatedProduct, nil
 }
+
+func DeleteProduct(db *sqlx.DB, id int) error {
+	query := `DELETE FROM products WHERE id = :id`
+	_, err := db.NamedExec(query, map[string]interface{}{"id": id})
+	if err != nil {
+		log.Println("Error deleting product", err)
+		return fmt.Errorf("error", err)
+	}
+	return nil
+}

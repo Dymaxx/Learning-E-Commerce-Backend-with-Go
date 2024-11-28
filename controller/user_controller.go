@@ -14,6 +14,7 @@ import (
 func GetUsers(c *gin.Context) {
 	database, err := middleware.GetDB(c)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to connect with the database"})
 		return
 	}
 	users, err := models.GetUsers(database.Conn)
@@ -29,7 +30,7 @@ func GetUserByID(c *gin.Context) {
 	database, err := middleware.GetDB(c)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to connect with the database"})
 		return
 	}
 	id, err := utility.Convert_params(c)
@@ -37,7 +38,7 @@ func GetUserByID(c *gin.Context) {
 	user, err := models.GetUserByID(database.Conn, id)
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	fmt.Println(user, "This is the user with id ", id)
@@ -62,9 +63,27 @@ func UpdateUser(c *gin.Context) {
 	// Update the user in the database
 	user, err := models.UpdateUser(database.Conn, id, updatedUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update the user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-
 	c.JSON(http.StatusOK, user)
 
+}
+
+func DeleteUser(c *gin.Context) {
+	id, err := utility.Convert_params(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "No id given"})
+	}
+	database, err := middleware.GetDB(c)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to connect to the db"})
+	}
+	err = models.DeleteUser(database.Conn, id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("User deleted with id %d", id)})
 }

@@ -91,3 +91,24 @@ func UpdateUser(db *sqlx.DB, id int, user User) (User, error) {
 	return updatedUser, nil
 
 }
+
+func DeleteUser(db *sqlx.DB, id int) error {
+	query := `DELETE FROM users WHERE id = :id`
+	result, err := db.NamedExec(query, map[string]interface{}{"id": id})
+	if err != nil {
+
+		return fmt.Errorf("Error", err)
+	}
+	fmt.Println(result)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+
+		return fmt.Errorf("error getting affected rows: %v", err)
+	}
+	if rowsAffected == 0 {
+
+		return fmt.Errorf("no users found with id %d ", id)
+	}
+
+	return nil
+}

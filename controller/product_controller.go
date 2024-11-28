@@ -23,7 +23,6 @@ func GetProducts(c *gin.Context) {
 		return
 	}
 	// Debugging log
-	fmt.Println(products, "These are the products")
 
 	c.JSON(http.StatusOK, products)
 }
@@ -40,7 +39,6 @@ func GetProductByID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to fetch product"})
 		return
 	}
-	fmt.Println(product, "This is the product")
 
 	c.JSON(http.StatusOK, product)
 
@@ -96,4 +94,24 @@ func UpdateProduct(c *gin.Context) {
 
 	// Respond with the updated product
 	c.JSON(http.StatusOK, product)
+}
+
+func DeleteProduct(c *gin.Context) {
+	id, err := utility.Convert_params(c)
+	if err != nil {
+		return
+	}
+	database, err := middleware.GetDB(c)
+	if err != nil {
+		return
+	}
+
+	err = models.DeleteProduct(database.Conn, id)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete product"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Success": fmt.Sprintf("Deleted the product with the id %d", id)})
+
 }
